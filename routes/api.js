@@ -112,6 +112,62 @@ router.get("/experience/:experienceId", async (req, res) => {
   }
 });
 
+router.get("/city/:cityId", async (req, res) => {
+  try {
+    const cityId = req.params.cityId;
+    const result = await City.find({ _id: cityId });
+    res.send(result);
+  } catch (err) {
+    throw err;
+  }
+});
+
+router.get("/experienceslist/:expe", async (req,res)=>{
+  try{
+  const result = [];
+  const names = [];
+  const exp = req.params.expe.split("|");
+  
+  const all = await Experience.find();
+  for(let i = 0; i<exp.length; i++){
+    for(let j = 0; j<all.length; j++){
+      if(exp[i] == all[j]._id){
+        names.push(all[j].displayName);
+        result.push(all[i].cityId);
+        break;
+      }
+    }
+  }
+  res.status(200).json({data:result,names:names});
+}
+catch(err){
+  throw err;
+}
+})
+
+router.get("/citieslist/:expe", async (req,res)=>{
+  try{
+  const result1 = [];
+  const result2 = [];
+  const exp = req.params.expe.split("|");
+  
+  const all = await City.find();
+  for(let i = 0; i<exp.length; i++){
+    for(let j = 0; j<all.length; j++){
+      if(exp[i] == all[j]._id){
+        result1.push(all[i].displayName);
+        result2.push(all[i].country.displayName);
+        break;
+      }
+    }
+  }
+  res.status(200).json({cityNames:result1, countryNames:result2});
+}
+catch(err){
+  throw err;
+}
+})
+
 // GET - /api/variant/:variantId -> To find all variants from DB
 router.get("/variant/:variantId", async (req, res) => {
   try {

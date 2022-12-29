@@ -117,4 +117,47 @@ router.post("/payment-verify", async (req, res) => {
   }
 });
 
+router.get("/performanceDashboard", async (rec, res) => {
+  async function findBookings(){
+    const result = await Booking.find();
+    return result;
+  }
+  findBookings().then((result)=>{
+    const tickets = result.length;
+    var netBookings = 0
+    const experiences = [];
+    const expBookings = [];
+    const expTickets = [];
+    const grossBookings = [0,0,0,0,0,0,0,0,0,0,0,0];
+    const ticketSold = [0,0,0,0,0,0,0,0,0,0,0,0];
+    var adults = 0;
+    var children = 0;
+    var others = 0;
+    if(result.length!=0){
+    for(let i = 0; i<result.length; i++){
+      if(result[i].details.experienceId!=null || result[i].details.experienceId!=undefined){
+      if(!experiences.includes(result[i].details.experienceId)){
+        experiences.push(result[i].details.experienceId);
+        expBookings.push(result[i].amount);
+        expTickets.push(1);
+      }
+      else{
+        expBookings[experiences.indexOf(result[i].details.experienceId)] += result[i].amount;
+        expTickets[experiences.indexOf(result[i].details.experienceId)] += 1;
+      }
+    }
+      netBookings +=result[i].amount;
+      grossBookings[result[i].details.date.getMonth()] += result[i].amount;
+      ticketSold[result[i].details.date.getMonth()]++;
+      adults += result[i].pax.adults;
+      children += result[i].pax.children;
+      others += result[i].pax.infants;
+    }}
+    return res.status(200).json({data:[{noTickets:tickets,totalamount:netBookings,totalBookingValue:grossBookings,monthlyTickets:ticketSold,paxdata:{nadult:adults,nchildren:children,nothers:others},experience:experiences,expBookings:expBookings, expTickets:expTickets}]});
+  }).catch((err)=>{
+    res.status(400).json({message:"Something went wrong",error:err})
+  })
+  
+})
+
 module.exports = router;
